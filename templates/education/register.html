@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация - Умный школьник</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .helptext { font-size: 0.85em; color: #666; display: block; margin-top: 5px; }
+        ul.errorlist { color: #dc3545; list-style: none; padding-left: 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎓 Умный школьник</a>
+            <a href="/" class="btn btn-light">На главную</a>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">📝 Регистрация нового пользователя</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки ниже.
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    {{ form.username.label }}
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.help_text %}
+                                    <div class="helptext">{{ form.username.help_text }}</div>
+                                {% endif %}
+                                {{ form.username.errors }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                    {{ form.password1.label }}
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.help_text %}
+                                    <div class="helptext">{{ form.password1.help_text }}</div>
+                                {% endif %}
+                                {{ form.password1.errors }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                    {{ form.password2.label }}
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.help_text %}
+                                    <div class="helptext">{{ form.password2.help_text }}</div>
+                                {% endif %}
+                                {{ form.password2.errors }}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">
+                                Зарегистрироваться
+                            </button>
+                        </form>
+                        
+                        <hr>
+                        
+                        <p class="text-center mb-0">
+                            Уже есть аккаунт? <a href="/login">Войти</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* Стили для полей ввода */
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+        }
+    </style>
+</body>
+</html>

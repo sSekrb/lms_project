@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить урок</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎓 Умный школьник</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-light">Назад</a>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <h1>Добавить урок в курс "{{ course.title }}"</h1>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.title.label }}</label>
+                        {{ form.title }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.content.label }}</label>
+                        {{ form.content }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">Сохранить урок</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

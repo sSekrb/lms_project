@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои задания</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎓 Умный школьник</a>
+            <div>
+                <a href="/profile/" class="btn btn-light me-2">Мой профиль</a>
+                <a href="/my-tasks/" class="btn btn-light me-2">Мои задания</a>
+                <a href="/logout/" class="btn btn-light">Выйти</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>📋 Мои задания</h1>
+
+        {% if tasks %}
+            <div class="list-group mt-4">
+                {% for task in tasks %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-1">{{ task.course.title }}</h5>
+                            <span class="badge 
+                                {% if task.status == 'completed' %}bg-success
+                                {% elif task.is_overdue %}bg-danger
+                                {% else %}bg-warning{% endif %}">
+                                {% if task.status == 'completed' %}✅ Выполнено
+                                {% elif task.is_overdue %}⚠️ Просрочено
+                                {% else %}⏳ В процессе{% endif %}
+                            </span>
+                        </div>
+                        <p class="mb-1">
+                            <strong>Курс:</strong> {{ task.course.description|truncatechars:100 }}<br>
+                            <strong>Прогресс:</strong> {{ task.progress }}/{{ task.lessons_count }} уроков
+                        </p>
+                        {% if task.deadline %}
+                            <p class="text-muted">
+                                <strong>⏰ Дедлайн:</strong> {{ task.deadline|date:"d.m.Y H:i" }}
+                                {% if task.is_overdue %}
+                                    <span class="text-danger">(просрочено)</span>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                        {% if task.status != 'completed' %}
+                            <a href="{% url 'course_detail' task.course.id %}" class="btn btn-sm btn-primary mt-2">
+                                {% if task.progress > 0 %}Продолжить обучение{% else %}Начать курс{% endif %}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'course_detail' task.course.id %}" class="btn btn-sm btn-outline-success mt-2">
+                                Посмотреть результаты
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-4">
+                <h4>🎉 У вас пока нет заданий</h4>
+                <p>Когда учитель выдаст вам курс, он появится здесь.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

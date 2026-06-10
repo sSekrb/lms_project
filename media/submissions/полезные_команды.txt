@@ -1,0 +1,7 @@
+.\venv\Scripts\python.exe manage.py runserver
+python manage.py runserver
+
+Все нужные веб-ссылки:
+http://127.0.0.1:8000/teacher/ - Панель учителя
+http://127.0.0.1:8000/admin/   - Панель админа
+http://127.0.0.1:8000/         - Основной сайт

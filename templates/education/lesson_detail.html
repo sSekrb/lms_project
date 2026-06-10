@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ lesson.title }} - Умный школьник</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎓 Умный школьник</a>
+            <div>
+                {% if user.is_authenticated %}
+                    <span class="text-white me-2">Привет, {{ user.username }}</span>
+                    <a href="/profile" class="btn btn-light me-2">👤 Профиль</a>
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light me-2">Выйти</button>
+                    </form>
+                {% else %}
+                    <a href="/login" class="btn btn-light me-2">Войти</a>
+                    <a href="/register" class="btn btn-light me-2">Регистрация</a>
+                {% endif %}
+                <a href="/admin" class="btn btn-light">⚙️ Админка</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <div class="mb-3">
+            <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-secondary">
+                ← Назад к курсу
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ lesson.title }}</h1>
+                <h6 class="card-subtitle mb-3 text-muted">
+                    Курс: {{ lesson.course.title }} | 
+                    Тип: 
+                    {% if lesson.lesson_type == 'video' %}🎥 Видеоурок
+                    {% elif lesson.lesson_type == 'quiz' %}📝 Тест
+                    {% elif lesson.lesson_type == 'task' %}📋 Практическое задание
+                    {% else %}📖 Текстовый урок
+                    {% endif %}
+                </h6>
+                
+                <!-- ТИПЫ УРОКОВ -->
+                {% if lesson.lesson_type == 'video' %}
+                    <div class="mt-4">
+                        <h4>🎥 Видеоурок</h4>
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ lesson.video_url }}" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    {% if lesson.content %}
+                        <div class="mt-4 p-4 bg-light rounded">
+                            {{ lesson.content|linebreaks }}
+                        </div>
+                    {% endif %}
+
+                {% elif lesson.lesson_type == 'quiz' %}
+    <!-- ТЕСТЫ -->
+    {% if lesson.test %}
+    <div class="card mt-5">
+        <div class="card-header bg-primary text-white">
+            <h3>📝 {{ lesson.test.title }}</h3>
+        </div>
+        <div class="card-body">
+            
+            <!-- РЕЗУЛЬТАТЫ ТЕСТА -->
+            {% if last_result %}
+                <div class="alert alert-info">
+                    <h4>Ваш результат: {{ last_result.score }}/{{ last_result.max_score }}</h4>
+                    <p>Попыток использовано: {{ last_result.attempts }}/3</p>
+                    {% if last_result.passed %}
+                        <p class="text-success">✅ Тест пройден!</p>
+                    {% else %}
+                        <p class="text-danger">❌ Тест не пройден</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'submit_test' lesson.id %}">
+                {% csrf_token %}
+                
+                {% for question in lesson.test.questions.all %}
+                    <div class="mb-4">
+                        <h5>{{ forloop.counter }}. {{ question.text }}</h5>
+                        {% for answer in question.answers.all %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" 
+                                       name="q{{ question.id }}" 
+                                       value="{{ answer.id }}" 
+                                       id="a{{ answer.id }}">
+                                <label class="form-check-label" for="a{{ answer.id }}">
+                                    {{ answer.text }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-primary">Проверить</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-warning mt-4">
+            <p>К этому уроку нет теста.</p>
+        </div>
+    {% endif %}
+
+                {% elif lesson.lesson_type == 'task' %}
+                    <div class="card mt-4">
+                        <div class="card-header bg-warning">
+                            <h4>📋 Практическое задание</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if lesson.task_description %}
+                                <div class="p-3 bg-light rounded mb-4">
+                                    {{ lesson.task_description|linebreaks }}
+                                </div>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'submit_task' lesson.id %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Текстовый ответ:</label>
+                                    <textarea name="text_answer" class="form-control" rows="5" placeholder="Введите ваш ответ..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Или загрузите файл:</label>
+                                    <input type="file" name="file_upload" class="form-control">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-warning">Отправить на проверку</button>
+                            </form>
+                            
+                            <!-- История отправок -->
+                            {% with submissions=user.task_submissions.all %}
+                                {% for sub in submissions %}
+                                    {% if sub.lesson == lesson %}
+                                        <div class="alert alert-info mt-3">
+                                            <p><strong>Ваше задание отправлено:</strong> {{ sub.submitted_at|date:"d.m.Y H:i" }}</p>
+                                            {% if sub.grade %}
+                                                <p><strong>Оценка:</strong> {{ sub.grade }}/10</p>
+                                                {% if sub.feedback %}
+                                                    <p><strong>Комментарий учителя:</strong> {{ sub.feedback }}</p>
+                                                {% endif %}
+                                            {% else %}
+                                                <p class="text-warning">⏳ Ожидает проверки учителем</p>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                {% else %}
+                    <!-- Текстовый урок -->
+                    <div class="mt-4 p-4 bg-light rounded">
+                        {{ lesson.content|linebreaks }}
+                    </div>
+                {% endif %}
+                <!-- КОНЕЦ ТИПОВ УРОКОВ -->
+                
+                <div class="alert alert-success mt-4">
+                    <h4>✅ Урок пройден!</h4>
+                    <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-primary">
+                        Вернуться к курсу
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

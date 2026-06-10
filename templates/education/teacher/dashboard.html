@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель учителя - Умный школьник</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎓 Умный школьник — Панель учителя</a>
+            <div>
+                <a href="{% url 'teacher_groups' %}" class="btn btn-info me-2">Группы</a>
+                <a href="/" class="btn btn-light me-2">На сайт</a>
+                <a href="/admin" class="btn btn-light">Админка</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <h1>📚 Управление курсами</h1>
+        <p class="text-muted">Здесь вы можете создавать и редактировать курсы, добавлять уроки и задания.</p>
+        
+        <div class="row mt-4">
+            {% for course in courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text">{{ course.description|truncatechars:100 }}</p>
+                        <p><span class="badge bg-info">Уроков: {{ course.lessons.count }}</span></p>
+                        <a href="{% url 'teacher_add_lesson' course.id %}" class="btn btn-success w-100">
+                            + Добавить урок
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <p>Пока нет курсов. Создайте их через <a href="/admin">админ-панель</a>.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Подсказка для учителя -->
+        <div class="alert alert-secondary mt-4">
+            <h5>📌 Как добавить курс?</h5>
+            <ol class="mb-0">
+                <li>Перейдите в <a href="/admin">админ-панель</a></li>
+                <li>Найдите раздел <strong>Курсы</strong></li>
+                <li>Нажмите <strong>Добавить курс</strong></li>
+                <li>Заполните название и описание</li>
+                <li>После создания курса можно добавлять уроки</li>
+            </ol>
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+            <h5>📌 Как проверить задания учеников?</h5>
+            <p class="mb-0">Перейдите в <strong>админ-панель → Отправки заданий</strong>. Там вы увидите все работы учеников, сможете поставить оценку и написать комментарий.</p>
+        </div>
+    </div>
+</body>
+</html>
