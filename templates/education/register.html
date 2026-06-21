@@ -2,38 +2,124 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - Умный школьник</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .helptext { font-size: 0.85em; color: #666; display: block; margin-top: 5px; }
-        ul.errorlist { color: #dc3545; list-style: none; padding-left: 0; }
-    </style>
+    body {
+        background-color: #f4f7fc;
+        font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    }
+    .navbar {
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: 0.2s;
+        background: white;
+    }
+    .card:hover {
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
+    }
+    .btn {
+        border-radius: 30px;
+        padding: 8px 24px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+    .btn-primary {
+        background: #3b7bff;
+        border: none;
+    }
+    .btn-primary:hover {
+        background: #295fcc;
+        transform: scale(1.02);
+    }
+    .btn-success {
+        background: #28a745;
+        border: none;
+    }
+    .btn-success:hover {
+        background: #1e7e34;
+        transform: scale(1.02);
+    }
+    .badge {
+        border-radius: 30px;
+        padding: 6px 16px;
+        font-weight: 500;
+    }
+    .container {
+        max-width: 1200px;
+    }
+    h1, h2, h3, h4 {
+        font-weight: 600;
+        color: #1a2b4a;
+    }
+    .text-muted {
+        color: #6c7a8e !important;
+    }
+    .list-group-item {
+        border: none;
+        border-radius: 12px !important;
+        margin-bottom: 6px;
+        background: white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        transition: 0.15s;
+    }
+    .list-group-item:hover {
+        background: #f0f4fe;
+        transform: translateX(4px);
+    }
+    .alert {
+        border-radius: 16px;
+        border: none;
+    }
+    .display-1, .display-4 {
+        color: #1a2b4a;
+    }
+    .table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .table th {
+        background: #f0f4fe;
+        font-weight: 600;
+    }
+    .shadow-sm {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+</style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary">
+    <nav class="navbar navbar-dark bg-primary navbar-expand-md">
         <div class="container">
             <a class="navbar-brand" href="/">🎓 Умный школьник</a>
-            <a href="/" class="btn btn-light">На главную</a>
+            <div class="ms-auto">
+                <a href="/" class="btn btn-light btn-sm">На главную</a>
+            </div>
         </div>
     </nav>
-    
-    <div class="container mt-5">
+
+    <div class="container mt-3 mt-md-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
                         <h3 class="mb-0">📝 Регистрация нового пользователя</h3>
                     </div>
                     <div class="card-body">
                         <form method="post">
                             {% csrf_token %}
-                            
                             {% if form.errors %}
                                 <div class="alert alert-danger">
                                     <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки ниже.
                                 </div>
                             {% endif %}
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.username.id_for_label }}" class="form-label">
                                     {{ form.username.label }}
@@ -44,7 +130,7 @@
                                 {% endif %}
                                 {{ form.username.errors }}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.password1.id_for_label }}" class="form-label">
                                     {{ form.password1.label }}
@@ -55,7 +141,7 @@
                                 {% endif %}
                                 {{ form.password1.errors }}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.password2.id_for_label }}" class="form-label">
                                     {{ form.password2.label }}
@@ -66,14 +152,12 @@
                                 {% endif %}
                                 {{ form.password2.errors }}
                             </div>
-                            
+
                             <button type="submit" class="btn btn-primary w-100">
                                 Зарегистрироваться
                             </button>
                         </form>
-                        
                         <hr>
-                        
                         <p class="text-center mb-0">
                             Уже есть аккаунт? <a href="/login">Войти</a>
                         </p>
@@ -82,20 +166,7 @@
             </div>
         </div>
     </div>
-    
-    <style>
-        /* Стили для полей ввода */
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            border-color: #0d6efd;
-            outline: none;
-            box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
-        }
-    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

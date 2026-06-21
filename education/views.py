@@ -359,3 +359,74 @@ def submit_task(request, lesson_id):
         messages.success(request, 'Задание отправлено на проверку!')
     return redirect('lesson_detail', lesson_id=lesson.id)
 
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_create_course(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        if title and description:
+            Course.objects.create(title=title, description=description)
+            messages.success(request, 'Курс создан!')
+            return redirect('teacher_dashboard')
+    return render(request, 'education/teacher/create_course.html')
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_edit_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if request.method == 'POST':
+        course.title = request.POST.get('title')
+        course.description = request.POST.get('description')
+        course.save()
+        messages.success(request, 'Курс обновлён!')
+        return redirect('teacher_dashboard')
+    return render(request, 'education/teacher/edit_course.html', {'course': course})
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_delete_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    course.delete()
+    messages.success(request, 'Курс удалён!')
+    return redirect('teacher_dashboard')
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_edit_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    if request.method == 'POST':
+        form = LessonForm(request.POST, instance=lesson)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Урок обновлён!')
+            return redirect('course_detail', course_id=lesson.course.id)
+    else:
+        form = LessonForm(instance=lesson)
+    return render(request, 'education/teacher/edit_lesson.html', {'form': form, 'lesson': lesson})
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_delete_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    course_id = lesson.course.id
+    lesson.delete()
+    messages.success(request, 'Урок удалён!')
+    return redirect('course_detail', course_id=course_id)
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_submissions(request):
+    submissions = TaskSubmission.objects.select_related('user', 'lesson').order_by('-submitted_at')
+    return render(request, 'education/teacher/submissions.html', {'submissions': submissions})
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_grade_submission(request, submission_id):
+    submission = get_object_or_404(TaskSubmission, id=submission_id)
+    if request.method == 'POST':
+        submission.grade = request.POST.get('grade')
+        submission.feedback = request.POST.get('feedback')
+        submission.save()
+        messages.success(request, 'Оценка сохранена!')
+    return redirect('teacher_submissions')

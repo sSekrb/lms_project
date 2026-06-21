@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход - Умный школьник</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
     body {
         background-color: #f4f7fc;
@@ -93,47 +89,47 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
     }
 </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка заданий</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary navbar-expand-md">
+    <nav class="navbar navbar-dark bg-success">
         <div class="container">
-            <a class="navbar-brand" href="/">🎓 Умный школьник</a>
-            <div class="ms-auto">
-                <a href="/" class="btn btn-light btn-sm">На главную</a>
-            </div>
+            <a class="navbar-brand" href="{% url 'teacher_dashboard' %}">🎓 Умный школьник</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-light btn-sm">← Назад</a>
         </div>
     </nav>
 
-    <div class="container mt-3 mt-md-5">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">🔐 Вход в систему</h3>
+    <div class="container mt-4">
+        <h1>📋 Проверка заданий</h1>
+        {% for sub in submissions %}
+            <div class="card mt-3 p-3">
+                <p><strong>Ученик:</strong> {{ sub.user.username }}</p>
+                <p><strong>Урок:</strong> {{ sub.lesson.title }}</p>
+                <p><strong>Ответ:</strong> {{ sub.text_answer|default:"Файл" }}</p>
+                {% if sub.file_upload %}
+                    <a href="{{ sub.file_upload.url }}" class="btn btn-sm btn-info">📎 Скачать файл</a>
+                {% endif %}
+                <form method="post" action="{% url 'teacher_grade_submission' sub.id %}">
+                    {% csrf_token %}
+                    <div class="row mt-2">
+                        <div class="col-4">
+                            <input type="number" name="grade" min="0" max="5" class="form-control" placeholder="Оценка 0–5">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" name="feedback" class="form-control" placeholder="Комментарий">
+                        </div>
+                        <div class="col-2">
+                            <button type="submit" class="btn btn-success">✅</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Имя пользователя</label>
-                                <input type="text" name="username" id="username" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Пароль</label>
-                                <input type="password" name="password" id="password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Войти</button>
-                        </form>
-                        <hr>
-                        <p class="text-center mb-0">
-                            Нет аккаунта? <a href="/register">Зарегистрироваться</a>
-                        </p>
-                    </div>
-                </div>
+                </form>
             </div>
-        </div>
+        {% empty %}
+            <div class="alert alert-info">Нет отправленных заданий.</div>
+        {% endfor %}
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

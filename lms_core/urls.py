@@ -27,6 +27,13 @@ urlpatterns = [
     path('teacher/groups/<int:group_id>/', views.group_detail, name='group_detail'),
     path('teacher/groups/<int:group_id>/assign/', views.assign_group_task, name='assign_group_task'),
     path('teacher/groups/<int:group_id>/edit/', views.edit_group, name='edit_group'),
+    path('teacher/create-course/', views.teacher_create_course, name='teacher_create_course'),
+    path('teacher/edit-course/<int:course_id>/', views.teacher_edit_course, name='teacher_edit_course'),
+    path('teacher/delete-course/<int:course_id>/', views.teacher_delete_course, name='teacher_delete_course'),
+    path('teacher/edit-lesson/<int:lesson_id>/', views.teacher_edit_lesson, name='teacher_edit_lesson'),
+    path('teacher/delete-lesson/<int:lesson_id>/', views.teacher_delete_lesson, name='teacher_delete_lesson'),
+    path('teacher/submissions/', views.teacher_submissions, name='teacher_submissions'),
+    path('teacher/grade-submission/<int:submission_id>/', views.teacher_grade_submission, name='teacher_grade_submission'),
 
     # Аутентификация
     path('login/', auth_views.LoginView.as_view(template_name='education/login.html'), name='login'),

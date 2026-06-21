@@ -31,5 +31,6 @@ class LessonForm(forms.ModelForm):
             'task_description': 'Описание задания',
         }
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 10}),
+            'content': forms.Textarea(attrs={'rows': 8}),
+            'task_description': forms.Textarea(attrs={'rows': 4}),
         }
