@@ -1,94 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <style>
-    body {
-        background-color: #f4f7fc;
-        font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-    }
-    .navbar {
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .card {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        transition: 0.2s;
-        background: white;
-    }
-    .card:hover {
-        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
-    }
-    .btn {
-        border-radius: 30px;
-        padding: 8px 24px;
-        font-weight: 500;
-        transition: 0.2s;
-    }
-    .btn-primary {
-        background: #3b7bff;
-        border: none;
-    }
-    .btn-primary:hover {
-        background: #295fcc;
-        transform: scale(1.02);
-    }
-    .btn-success {
-        background: #28a745;
-        border: none;
-    }
-    .btn-success:hover {
-        background: #1e7e34;
-        transform: scale(1.02);
-    }
-    .badge {
-        border-radius: 30px;
-        padding: 6px 16px;
-        font-weight: 500;
-    }
-    .container {
-        max-width: 1200px;
-    }
-    h1, h2, h3, h4 {
-        font-weight: 600;
-        color: #1a2b4a;
-    }
-    .text-muted {
-        color: #6c7a8e !important;
-    }
-    .list-group-item {
-        border: none;
-        border-radius: 12px !important;
-        margin-bottom: 6px;
-        background: white;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.02);
-        transition: 0.15s;
-    }
-    .list-group-item:hover {
-        background: #f0f4fe;
-        transform: translateX(4px);
-    }
-    .alert {
-        border-radius: 16px;
-        border: none;
-    }
-    .display-1, .display-4 {
-        color: #1a2b4a;
-    }
-    .table {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    }
-    .table th {
-        background: #f0f4fe;
-        font-weight: 600;
-    }
-    .shadow-sm {
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
-    }
-</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Проверка заданий</title>
@@ -104,32 +16,58 @@
 
     <div class="container mt-4">
         <h1>📋 Проверка заданий</h1>
-        {% for sub in submissions %}
-            <div class="card mt-3 p-3">
-                <p><strong>Ученик:</strong> {{ sub.user.username }}</p>
-                <p><strong>Урок:</strong> {{ sub.lesson.title }}</p>
-                <p><strong>Ответ:</strong> {{ sub.text_answer|default:"Файл" }}</p>
-                {% if sub.file_upload %}
-                    <a href="{{ sub.file_upload.url }}" class="btn btn-sm btn-info">📎 Скачать файл</a>
-                {% endif %}
-                <form method="post" action="{% url 'teacher_grade_submission' sub.id %}">
-                    {% csrf_token %}
-                    <div class="row mt-2">
-                        <div class="col-4">
-                            <input type="number" name="grade" min="0" max="5" class="form-control" placeholder="Оценка 0–5">
+        <p class="text-muted">Здесь вы можете просматривать ответы учеников, ставить оценки и оставлять комментарии.</p>
+
+        {% if submissions %}
+            {% for sub in submissions %}
+                <div class="card mb-3 p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <strong>{{ sub.user.username }}</strong>
+                            <br>
+                            <small class="text-muted">{{ sub.lesson.course.title }}</small>
+                            <br>
+                            <small>{{ sub.lesson.title }}</small>
                         </div>
-                        <div class="col-6">
-                            <input type="text" name="feedback" class="form-control" placeholder="Комментарий">
+                        <div class="col-md-3">
+                            <strong>Ответ:</strong>
+                            {% if sub.text_answer %}
+                                <p class="mb-0">{{ sub.text_answer|truncatechars:100 }}</p>
+                            {% endif %}
+                            {% if sub.file_upload %}
+                                <a href="{{ sub.file_upload.url }}" class="btn btn-sm btn-info" target="_blank">📎 Скачать файл</a>
+                            {% endif %}
+                            <br>
+                            <small class="text-muted">Отправлено: {{ sub.submitted_at|date:"d.m.Y H:i" }}</small>
                         </div>
-                        <div class="col-2">
-                            <button type="submit" class="btn btn-success">✅</button>
+                        <div class="col-md-3">
+                            <form method="post" class="row g-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="submission_id" value="{{ sub.id }}">
+                                <div class="col-6">
+                                    <input type="number" name="grade" class="form-control" placeholder="Оценка 0–5" value="{{ sub.grade|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" name="feedback" class="form-control" placeholder="Комментарий" value="{{ sub.feedback|default:'' }}">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-success btn-sm w-100">💾 Сохранить оценку</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            {% if sub.grade %}
+                                <span class="badge bg-success fs-6">Оценка: {{ sub.grade }}/5</span>
+                            {% else %}
+                                <span class="badge bg-warning">⏳ Не проверено</span>
+                            {% endif %}
                         </div>
                     </div>
-                </form>
-            </div>
-        {% empty %}
+                </div>
+            {% endfor %}
+        {% else %}
             <div class="alert alert-info">Нет отправленных заданий.</div>
-        {% endfor %}
+        {% endif %}
     </div>
 </body>
 </html>

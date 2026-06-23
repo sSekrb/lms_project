@@ -94,6 +94,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'teacher', 'created_at']
     filter_horizontal = ['students']
     list_filter = ['teacher']
+    search_fields = ['name', 'teacher__username', 'teacher__profile__role']
 
 @admin.register(GroupTask)
 class GroupTaskAdmin(admin.ModelAdmin):

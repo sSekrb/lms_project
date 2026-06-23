@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выдача достижений</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'teacher_dashboard' %}">🎓 Умный школьник</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-light btn-sm">← Назад</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>🏆 Выдача достижений</h1>
+        <p class="text-muted">Выберите ученика и достижение, которое хотите выдать.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-5">
+                    <label class="form-label">Ученик</label>
+                    <select name="student_id" class="form-control" required>
+                        <option value="">-- Выберите --</option>
+                        {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Достижение</label>
+                    <select name="achievement_id" class="form-control" required>
+                        <option value="">-- Выберите --</option>
+                        {% for ach in achievements %}
+                            <option value="{{ ach.id }}">{{ ach.icon }} {{ ach.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">🎯 Выдать</button>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        <h3>📋 Выданные достижения</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th>Достижение</th>
+                    <th>Дата выдачи</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ua in user_achievements %}
+                    <tr>
+                        <td>{{ ua.user.username }}</td>
+                        <td>{{ ua.achievement.icon }} {{ ua.achievement.name }}</td>
+                        <td>{{ ua.earned_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3">Пока нет выданных достижений.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

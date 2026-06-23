@@ -208,6 +208,14 @@
                         <div class="card-header bg-warning">
                             <h4>📋 Практическое задание</h4>
                         </div>
+
+                            <!-- СОДЕРЖАНИЕ УРОКА (добавлено) -->
+                            {% if lesson.content %}
+                                <div class="p-3 bg-light rounded mb-4">
+                                {{ lesson.content|linebreaks }}
+                            </div>
+                        {% endif %}
+
                         <div class="card-body">
                             {% if lesson.task_description %}
                                 <div class="p-3 bg-light rounded mb-4">

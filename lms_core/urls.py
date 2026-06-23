@@ -20,6 +20,11 @@ urlpatterns = [
     path('submit-test/<int:lesson_id>/', views.submit_test, name='submit_test'),
     path('submit-task/<int:lesson_id>/', views.submit_task, name='submit_task'),
     path('my-tasks/', views.my_tasks, name='my_tasks'),
+    path('teacher/create-test/<int:course_id>/', views.teacher_create_test, name='teacher_create_test'),
+    path('teacher/create-task/<int:course_id>/', views.teacher_create_task, name='teacher_create_task'),
+    path('teacher/submissions/', views.teacher_submissions, name='teacher_submissions'),
+    path('teacher/achievements/', views.teacher_achievements, name='teacher_achievements'),
+    path('teacher/add-lesson-fast/<int:course_id>/<str:lesson_type>/', views.teacher_add_lesson_fast, name='teacher_add_lesson_fast'),
 
     # Учитель — группы
     path('teacher/groups/', views.teacher_groups, name='teacher_groups'),

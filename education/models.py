@@ -149,7 +149,11 @@ class TestResult(models.Model):
 class Group(models.Model):
     name = models.CharField('Название группы', max_length=100)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher_groups')
-    students = models.ManyToManyField(User, related_name='student_groups', limit_choices_to={'userprofile__role': 'student'})
+    students = models.ManyToManyField(
+    User,
+    related_name='student_groups',
+    limit_choices_to={'profile__role': 'student'}
+)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -170,9 +174,9 @@ class GroupTask(models.Model):
         verbose_name_plural = 'Групповые задания'
 
     def __str__(self):
-        if self.course_id:
+        if self.course:
             return f"{self.group.name} - {self.course.title}"
-        return f"{self.group.name} - Задание {self.id}"
+        return f"{self.group.name} - Курс не указан"
     
 class GroupTaskResult(models.Model):
     group_task = models.ForeignKey(GroupTask, on_delete=models.CASCADE, related_name='results')
@@ -189,7 +193,7 @@ class GroupTaskResult(models.Model):
         unique_together = ['group_task', 'student']
     
     def __str__(self):
-        return f"{self.student.username} - {self.group_task.lesson.title}"
+        return f"{self.student.username} - {self.group_task.course.title}"
     
 class StudentTask(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'profile__role': 'student'})
@@ -204,4 +208,4 @@ class StudentTask(models.Model):
         unique_together = ['student', 'group_task']
 
     def __str__(self):
-        return f"{self.student.username} - {self.group_task.lesson.title}"
+        return f"{self.student.username} - {self.group_task.course.title}"

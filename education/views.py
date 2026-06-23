@@ -10,6 +10,7 @@ from .forms import LessonForm
 from django.contrib.auth.models import User
 from django.utils import timezone
 from .models import StudentTask
+from .models import Test, Question, Answer
 
 # Декоратор для проверки роли пользователя
 def role_required(allowed_roles):
@@ -139,22 +140,29 @@ def teacher_dashboard(request):
     courses = Course.objects.all()
     return render(request, 'education/teacher/dashboard.html', {'courses': courses})
 
-@staff_member_required
+from .forms import LessonForm
+
+@login_required
+@role_required(['teacher', 'admin'])
 def teacher_add_lesson(request, course_id):
     course = get_object_or_404(Course, id=course_id)
+
     if request.method == 'POST':
         form = LessonForm(request.POST)
         if form.is_valid():
             lesson = form.save(commit=False)
             lesson.course = course
             lesson.save()
-            return redirect('course_detail', course_id=course.id)
+            messages.success(request, f'Урок "{lesson.title}" добавлен!')
+            return redirect('teacher_edit_course', course_id=course.id)
+        else:
+            messages.error(request, 'Ошибка в форме. Проверьте поля.')
     else:
         form = LessonForm()
-    
+
     return render(request, 'education/teacher/add_lesson.html', {
+        'course': course,
         'form': form,
-        'course': course
     })
 
 def home(request):
@@ -192,6 +200,7 @@ def home(request):
         return render(request, 'education/home.html', {'courses': courses})
 
 def course_detail(request, course_id):
+    
     course = get_object_or_404(Course, id=course_id)
     lessons = course.lessons.all()
     
@@ -212,10 +221,6 @@ def course_detail(request, course_id):
         'lessons_with_progress': lessons_with_progress
     })
     
-    return render(request, 'education/course_detail.html', {
-        'course': course,
-        'lessons_with_progress': lessons_with_progress
-    })
 
 @login_required
 def lesson_detail(request, lesson_id):
@@ -260,49 +265,20 @@ def profile(request):
     # Уровень (простая формула: 1 уровень за каждые 3 урока)
     level = (completed_lessons // 3) + 1
     
-    # Достижения пользователя
     user_achievements = UserAchievement.objects.filter(user=user).select_related('achievement')
-    
-    # Все доступные достижения
     all_achievements = Achievement.objects.all()
-    
+    user_achievement_ids = list(user_achievements.values_list('achievement_id', flat=True))
+
     return render(request, 'education/profile.html', {
         'user': user,
         'level': level,
         'completed_lessons': completed_lessons,
         'total_lessons': total_lessons,
         'user_achievements': user_achievements,
-        'all_achievements': all_achievements
+        'all_achievements': all_achievements,
+        'user_achievement_ids': user_achievement_ids,
     })
 
-#def check_achievements(user):
-    """Проверка условий для выдачи достижений"""
-    completed_count = Progress.objects.filter(user=user, completed=True).count()
-    
-    # Достижение "Первый шаг" (1 урок)
-    if completed_count >= 1:
-        achievement = Achievement.objects.filter(name='Первый шаг').first()
-        if achievement:
-            UserAchievement.objects.get_or_create(user=user, achievement=achievement)
-    
-    # Достижение "Усердный ученик" (5 уроков)
-    if completed_count >= 5:
-        achievement = Achievement.objects.filter(name='Усердный ученик').first()
-        if achievement:
-            UserAchievement.objects.get_or_create(user=user, achievement=achievement)
-    
-    # Достижение "Математик" (за курс математики)
-    math_course = Course.objects.filter(title__icontains='математик').first()
-    if math_course:
-        math_lessons = Lesson.objects.filter(course=math_course)
-        math_completed = all(
-            Progress.objects.filter(user=user, lesson=lesson, completed=True).exists()
-            for lesson in math_lessons
-        )
-        if math_completed and math_lessons.exists():
-            achievement = Achievement.objects.filter(name='Математик').first()
-            if achievement:
-                UserAchievement.objects.get_or_create(user=user, achievement=achievement)
 
 @login_required
 def submit_test(request, lesson_id):
@@ -414,11 +390,6 @@ def teacher_delete_lesson(request, lesson_id):
     messages.success(request, 'Урок удалён!')
     return redirect('course_detail', course_id=course_id)
 
-@login_required
-@role_required(['teacher', 'admin'])
-def teacher_submissions(request):
-    submissions = TaskSubmission.objects.select_related('user', 'lesson').order_by('-submitted_at')
-    return render(request, 'education/teacher/submissions.html', {'submissions': submissions})
 
 @login_required
 @role_required(['teacher', 'admin'])
@@ -430,3 +401,153 @@ def teacher_grade_submission(request, submission_id):
         submission.save()
         messages.success(request, 'Оценка сохранена!')
     return redirect('teacher_submissions')
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_create_test(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        questions_text = request.POST.getlist('question_text[]')
+        answers_text = request.POST.getlist('answer_text[]')
+
+        # Собираем правильные ответы из радиокнопок
+        correct_map = {}
+        for key, value in request.POST.items():
+            if key.startswith('correct_'):
+                q_index = int(key.split('_')[1])
+                correct_map[q_index] = int(value)
+
+        lesson = Lesson.objects.create(
+            course=course,
+            title=title,
+            content=content,
+            lesson_type='quiz'
+        )
+        test = Test.objects.create(lesson=lesson, title=title)
+
+        q_index = 0
+        a_index = 0
+        for q_text in questions_text:
+            if not q_text.strip():
+                continue
+            q = Question.objects.create(test=test, text=q_text)
+
+            for i in range(3):
+                a_text = answers_text[a_index] if a_index < len(answers_text) else ''
+                a_index += 1
+                if not a_text.strip():
+                    continue
+                is_correct = (correct_map.get(q_index, -1) == i)
+                Answer.objects.create(question=q, text=a_text, is_correct=is_correct)
+
+            q_index += 1
+
+        messages.success(request, f'Урок "{title}" и тест созданы!')
+        return redirect('teacher_dashboard')
+
+    return render(request, 'education/teacher/create_test.html', {'course': course})
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_create_task(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        task_description = request.POST.get('task_description')
+
+        # Создаём урок с типом task
+        lesson = Lesson.objects.create(
+            course=course,
+            title=title,
+            content=content,
+            lesson_type='task',
+            task_description=task_description
+        )
+
+        messages.success(request, f'Урок "{title}" и практическое задание созданы!')
+        return redirect('teacher_dashboard')
+
+    return render(request, 'education/teacher/create_task.html', {'course': course})
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_submissions(request):
+    submissions = TaskSubmission.objects.select_related('user', 'lesson__course').order_by('-submitted_at')
+
+    if request.method == 'POST':
+        sub_id = request.POST.get('submission_id')
+        grade = request.POST.get('grade')
+        feedback = request.POST.get('feedback')
+
+        submission = get_object_or_404(TaskSubmission, id=sub_id)
+        submission.grade = grade if grade else None
+        submission.feedback = feedback
+        submission.save()
+
+        messages.success(request, f'Оценка для {submission.user.username} сохранена!')
+        return redirect('teacher_submissions')
+
+    return render(request, 'education/teacher/submissions.html', {
+        'submissions': submissions
+    })
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_achievements(request):
+    students = User.objects.filter(profile__role='student')
+    achievements = Achievement.objects.all()
+    user_achievements = UserAchievement.objects.select_related('user', 'achievement').order_by('-earned_at')
+
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        achievement_id = request.POST.get('achievement_id')
+
+        if student_id and achievement_id:
+            student = get_object_or_404(User, id=student_id)
+            achievement = get_object_or_404(Achievement, id=achievement_id)
+
+            obj, created = UserAchievement.objects.get_or_create(user=student, achievement=achievement)
+            if created:
+                messages.success(request, f'🏆 Достижение "{achievement.name}" выдано {student.username}!')
+            else:
+                messages.warning(request, f'⚠️ У {student.username} уже есть это достижение.')
+        else:
+            messages.error(request, '❌ Выберите ученика и достижение.')
+
+        return redirect('teacher_achievements')
+
+    return render(request, 'education/teacher/achievements.html', {
+        'students': students,
+        'achievements': achievements,
+        'user_achievements': user_achievements,
+    })
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_add_lesson_fast(request, course_id, lesson_type):
+    course = get_object_or_404(Course, id=course_id)
+
+    type_names = {
+        'text': 'Текстовый урок',
+        'video': 'Видеоурок',
+    }
+
+    lesson = Lesson.objects.create(
+        course=course,
+        title=f"Новый {type_names.get(lesson_type, lesson_type)}",
+        lesson_type=lesson_type,
+        content="",
+    )
+
+    messages.success(request, f'Урок "{type_names.get(lesson_type, lesson_type)}" создан!')
+
+    # Если это видео — сразу открываем редактирование
+    if lesson_type == 'video':
+        return redirect('teacher_edit_lesson', lesson_id=lesson.id)
+
+    return redirect('teacher_edit_course', course_id=course.id)

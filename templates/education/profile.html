@@ -150,14 +150,14 @@
                         <div class="row g-2 mt-2">
                             {% for achievement in all_achievements %}
                             <div class="col-12 col-md-6">
-                                <div class="card {% if achievement in user_achievements %}border-success{% endif %}">
+                                <div class="card {% if achievement.id in user_achievement_ids %}border-success{% endif %}">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
                                             <span class="display-4 me-3">{{ achievement.icon }}</span>
                                             <div>
                                                 <h5>{{ achievement.name }}</h5>
                                                 <p class="small">{{ achievement.description }}</p>
-                                                {% if achievement in user_achievements %}
+                                                {% if achievement.id in user_achievement_ids %}
                                                     <span class="badge bg-success">✅ Получено</span>
                                                 {% else %}
                                                     <span class="badge bg-secondary">⏳ Ещё не получено</span>
