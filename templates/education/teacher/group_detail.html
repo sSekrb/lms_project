@@ -135,33 +135,33 @@
             <div class="alert alert-warning">Нет учеников в этой группе.</div>
         {% endif %}
 
-        <h3>📋 Задания группы</h3>
-        {% if group.tasks.all %}
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Урок/Тест</th>
-                            <th>Тип</th>
-                            <th>Дедлайн</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for task in group.tasks.all %}
-                        <tr>
-                            <td>{{ task.lesson.title }}</td>
-                            <td>{{ task.get_task_type_display }}</td>
-                            <td>{{ task.deadline|date:"d.m.Y H:i"|default:"Нет" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-info">
-                Заданий пока нет. <a href="{% url 'assign_group_task' group.id %}">Выдать задание</a>
-            </div>
-        {% endif %}
+        <h3>📋 Выданные курсы группе</h3>
+{% if group.tasks.all %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Курс</th>
+                    <th>Дедлайн</th>
+                    <th>Дата выдачи</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in group.tasks.all %}
+                <tr>
+                    <td>{{ task.course.title }}</td>
+                    <td>{{ task.deadline|date:"d.m.Y H:i"|default:"Не установлен" }}</td>
+                    <td>{{ task.assigned_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Заданий пока нет. <a href="{% url 'assign_group_task' group.id %}">Выдать курс</a>
+    </div>
+{% endif %}
 
         <a href="{% url 'teacher_groups' %}" class="btn btn-secondary mt-3 w-100 w-md-auto">← Назад к группам</a>
     </div>
