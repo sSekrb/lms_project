@@ -25,6 +25,7 @@ urlpatterns = [
     path('teacher/submissions/', views.teacher_submissions, name='teacher_submissions'),
     path('teacher/achievements/', views.teacher_achievements, name='teacher_achievements'),
     path('teacher/add-lesson-fast/<int:course_id>/<str:lesson_type>/', views.teacher_add_lesson_fast, name='teacher_add_lesson_fast'),
+    path('teacher/delete-group/<int:group_id>/', views.teacher_delete_group, name='teacher_delete_group'),
 
     # Учитель — группы
     path('teacher/groups/', views.teacher_groups, name='teacher_groups'),

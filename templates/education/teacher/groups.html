@@ -137,6 +137,7 @@
                             <div class="mt-auto">
                                 <a href="{% url 'group_detail' group.id %}" class="btn btn-info btn-sm">👁 Подробнее</a>
                                 <a href="{% url 'assign_group_task' group.id %}" class="btn btn-warning btn-sm">📚 Выдать курс</a>
+                                <a href="{% url 'teacher_delete_group' group.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Удалить группу?')">🗑️ Удалить</a>
                         </div>
                     </div>
                 </div>

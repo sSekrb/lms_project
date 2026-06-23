@@ -551,3 +551,11 @@ def teacher_add_lesson_fast(request, course_id, lesson_type):
         return redirect('teacher_edit_lesson', lesson_id=lesson.id)
 
     return redirect('teacher_edit_course', course_id=course.id)
+
+@login_required
+@role_required(['teacher', 'admin'])
+def teacher_delete_group(request, group_id):
+    group = get_object_or_404(Group, id=group_id, teacher=request.user)
+    group.delete()
+    messages.success(request, f'Группа "{group.name}" удалена!')
+    return redirect('teacher_groups')
